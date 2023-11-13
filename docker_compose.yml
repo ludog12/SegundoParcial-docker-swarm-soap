@@ -1,0 +1,47 @@
+version: "3"
+
+services:
+  db_service:
+    image: segundo_parcial_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root1
+    deploy:
+      replicas: 1
+    ports:
+      - "3306:3306"
+    networks:
+      - swarm_network
+
+  rest_service:
+    image: servicio_rest
+    deploy:
+      replicas: 1
+    command: >
+      sh -c "while ! nc -z db_service 3306; do sleep 1; done; npm start"
+    ports:
+      - "8080:8080"
+    networks:
+      - swarm_network
+
+  soap_service:
+    image: swarm_soap_service
+    deploy:
+      replicas: 1
+    command: >
+      sh -c "while ! nc -z db_service 3306; do sleep 1; done; npm start"
+    ports:
+      - "8888:8888"
+    networks:
+      - swarm_network
+
+  front_service:
+    image: swarm_front_service
+    ports:
+      - "80:80"
+    deploy:
+      replicas: 4
+    networks:
+      - swarm_network
+
+networks:
+  swarm_network:
